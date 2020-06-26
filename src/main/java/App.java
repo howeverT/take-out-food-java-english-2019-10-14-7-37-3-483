@@ -1,3 +1,5 @@
+
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -13,8 +15,74 @@ public class App {
     }
 
     public String bestCharge(List<String> inputs) {
-        //TODO: write code here
+        List<Item> itemList=itemRepository.findAll();   //get the item list from itemRepositoryImpl
+        List<SalesPromotion> salesPromotionList=salesPromotionRepository.findAll(); //get the SalesPromotion list from salesPromotionRepositoryImpl
+        //List<Double> receipt=new ArrayList<>();
+        double price_30=0;
+        double price_half=0;
+        double price_save=0;
+        String result="============= Order details =============\n";
+        String show="";
+        for (String input : inputs) {
+            boolean flag=false;
+            int num=Integer.parseInt(String.valueOf(input.charAt(input.length()-1)));
+            for (Item item : itemList) {
+                if (item.getId().equals(input.substring(0,8))){
+                    result+=item.getName()+" x "
+                            +num +" = "
+                            +(int)item.getPrice()*num+" yuan\n";
+                    price_30+=item.getPrice()*num;
+                    for (String relatedItem : salesPromotionList.get(1).getRelatedItems()) {
+                        if (item.getId().equals(relatedItem)){
+                            price_half+=item.getPrice()*num/2;
+                            price_save+=item.getPrice()*num/2;
+                            flag=true;
+                            if(show.equals(""))
+                                show+=item.getName();
+                            else
+                                show+="，"+item.getName();
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        price_half+=item.getPrice()*num;
+                    }
+                    break;
+                }
 
-        return null;
+            }
+
+
+        }
+        result+="-----------------------------------\n" ;
+        //System.out.println(result);
+        //System.out.println(price_30+","+price_half+","+price_save);
+        if(price_30>=30)
+            price_30-=6;
+        else {
+            result+= "Total："+(int)price_30+" yuan\n" +
+                    "===================================";
+            return result;
+        }
+        if(price_30<=price_half){
+            result+="Promotion used:\n"+
+                    "满30减6 yuan，saving 6 yuan\n" +
+                    "-----------------------------------\n" +
+                    "Total："+(int)price_30+" yuan\n" +
+                    "===================================";
+        }
+        else{
+            result+="Promotion used:\n"+
+                    "Half price for certain dishes ("+show+")，saving "+(int)price_save+" yuan\n" +
+                    "-----------------------------------\n" +
+                    "Total："+(int)price_half+" yuan\n" +
+                    "===================================";
+        }
+        System.out.println(result);
+
+
+
+
+        return result;
     }
 }
